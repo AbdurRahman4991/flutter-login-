@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class Register extends StatelessWidget {
-  const Register({super.key});
+class ResetPassword extends StatelessWidget {
+  const ResetPassword({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class Register extends StatelessWidget {
             ],
           ),
         ),
-        child: SingleChildScrollView( // <-- scrollable
+        child: SingleChildScrollView( // 👈 scroll যোগ করা হয়েছে
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -28,14 +28,20 @@ class Register extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text("Register", style: TextStyle(color: Colors.white, fontSize: 40)),
-                    Text("Welcome", style: TextStyle(color: Colors.white, fontSize: 18)),
+                    Text(
+                      "Reset Password",
+                      style: TextStyle(color: Colors.white, fontSize: 40),
+                    ),
+                    Text(
+                      "Welcome",
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
                   ],
                 ),
               ),
 
               Container(
-                height: MediaQuery.of(context).size.height * 0.75,
+                // 👇 height কমিয়ে দেওয়া হয়েছে যাতে overflow না হয়
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
@@ -49,10 +55,7 @@ class Register extends StatelessWidget {
                     children: <Widget>[
                       const SizedBox(height: 40),
 
-                      _buildInputField("Name"),
-                      const SizedBox(height: 20),
-
-                      _buildInputField("Email"),
+                      _buildInputField("Email address"),
                       const SizedBox(height: 20),
 
                       _buildInputField("Password", isPassword: true),
@@ -61,7 +64,7 @@ class Register extends StatelessWidget {
                       _buildInputField("Confirm password", isPassword: true),
                       const SizedBox(height: 40),
 
-                      // Register Button
+                      // 👇 Reset Button
                       Container(
                         height: 50,
                         margin: const EdgeInsets.symmetric(horizontal: 50),
@@ -71,7 +74,7 @@ class Register extends StatelessWidget {
                         ),
                         child: const Center(
                           child: Text(
-                            "Register",
+                            "Reset Password",
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -84,10 +87,10 @@ class Register extends StatelessWidget {
 
                       GestureDetector(
                         onTap: () {
-                          Navigator.pop(context); // back to login
+                          Navigator.pop(context);
                         },
                         child: Text(
-                          "Already have an account? Login",
+                          "Back to Login",
                           style: TextStyle(color: Colors.grey[600]),
                         ),
                       ),
@@ -102,7 +105,7 @@ class Register extends StatelessWidget {
     );
   }
 
-  // Helper method for TextField widget
+  // ✅ Reusable TextField Widget
   Widget _buildInputField(String hint, {bool isPassword = false}) {
     return Container(
       padding: const EdgeInsets.all(10),
