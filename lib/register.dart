@@ -1,7 +1,52 @@
 import 'package:flutter/material.dart';
+import '/services/register_api_service.dart';
 
-class Register extends StatelessWidget {
+class Register extends StatefulWidget {
   const Register({super.key});
+
+  @override
+  State<Register> createState() => _RegisterState();
+}
+
+class _RegisterState extends State<Register> {
+  final _formKey = GlobalKey<FormState>();
+
+  final nameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmController = TextEditingController();
+
+  bool isLoading = false;
+
+  Future<void> handleRegister() async {
+    if (!_formKey.currentState!.validate()) {
+      return; // validation fail করলে আর কিছু করবে না
+    }
+
+    setState(() => isLoading = true);
+
+    final message = await ApiService.registerUser(
+      nameController.text.trim(),
+      emailController.text.trim(),
+      passwordController.text.trim(),
+      confirmController.text.trim(),
+    );
+
+    setState(() => isLoading = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message ?? "Unknown error")),
+    );
+
+    if (message == "User registered successfully") {
+      // ✅ সফল হলে ইনপুট ফিল্ড clear
+      nameController.clear();
+      emailController.clear();
+      passwordController.clear();
+      confirmController.clear();
+      _formKey.currentState?.reset();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,13 +57,13 @@ class Register extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             colors: [
-              Colors.orange[900]!,
-              Colors.orange[800]!,
-              Colors.orange[400]!,
+              Colors.blue[900]!,
+              Colors.blue[800]!,
+              Colors.blue[400]!,
             ],
           ),
         ),
-        child: SingleChildScrollView( // <-- scrollable
+        child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -33,7 +78,6 @@ class Register extends StatelessWidget {
                   ],
                 ),
               ),
-
               Container(
                 height: MediaQuery.of(context).size.height * 0.75,
                 decoration: const BoxDecoration(
@@ -45,53 +89,92 @@ class Register extends StatelessWidget {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: <Widget>[
-                      const SizedBox(height: 40),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: <Widget>[
+                        const SizedBox(height: 40),
 
-                      _buildInputField("Name"),
-                      const SizedBox(height: 20),
-
-                      _buildInputField("Email"),
-                      const SizedBox(height: 20),
-
-                      _buildInputField("Password", isPassword: true),
-                      const SizedBox(height: 20),
-
-                      _buildInputField("Confirm password", isPassword: true),
-                      const SizedBox(height: 40),
-
-                      // Register Button
-                      Container(
-                        height: 50,
-                        margin: const EdgeInsets.symmetric(horizontal: 50),
-                        decoration: BoxDecoration(
-                          color: Colors.orange[900],
-                          borderRadius: BorderRadius.circular(50),
+                        _buildInputField(
+                          "Name",
+                          controller: nameController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) return "Name is required";
+                            return null;
+                          },
                         ),
-                        child: const Center(
-                          child: Text(
-                            "Register",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                        const SizedBox(height: 20),
+
+                        _buildInputField(
+                          "Email",
+                          controller: emailController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) return "Email is required";
+                            if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) return "Enter a valid email";
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+
+                        _buildInputField(
+                          "Password",
+                          controller: passwordController,
+                          isPassword: true,
+                          validator: (value) {
+                            if (value == null || value.length < 6) return "Minimum 8 characters required";
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+
+                        _buildInputField(
+                          "Confirm password",
+                          controller: confirmController,
+                          isPassword: true,
+                          validator: (value) {
+                            if (value != passwordController.text) return "Passwords do not match";
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 40),
+
+                        GestureDetector(
+                          onTap: isLoading ? null : handleRegister,
+                          child: Container(
+                            height: 50,
+                            margin: const EdgeInsets.symmetric(horizontal: 50),
+                            decoration: BoxDecoration(
+                              color: Colors.blue[900],
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            child: Center(
+                              child: isLoading
+                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  : const Text(
+                                      "Register",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                             ),
                           ),
                         ),
-                      ),
 
-                      const SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pop(context); // back to login
-                        },
-                        child: Text(
-                          "Already have an account? Login",
-                          style: TextStyle(color: Colors.grey[600]),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text(
+                            "Already have an account? Login",
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -102,8 +185,12 @@ class Register extends StatelessWidget {
     );
   }
 
-  // Helper method for TextField widget
-  Widget _buildInputField(String hint, {bool isPassword = false}) {
+  Widget _buildInputField(
+    String hint, {
+    bool isPassword = false,
+    TextEditingController? controller,
+    String? Function(String?)? validator,
+  }) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -117,8 +204,10 @@ class Register extends StatelessWidget {
           ),
         ],
       ),
-      child: TextField(
+      child: TextFormField(
+        controller: controller,
         obscureText: isPassword,
+        validator: validator,
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(color: Colors.grey),

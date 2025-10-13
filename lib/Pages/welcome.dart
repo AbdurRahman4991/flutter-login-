@@ -1,7 +1,48 @@
 import 'package:flutter/material.dart';
+import '/services/logout_api_service.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class Welcome extends StatelessWidget {
-  const Welcome({super.key});
+  
+  final String? token; // nullable
+  const Welcome({super.key, this.token});
+ 
+
+Future<void> _logout(BuildContext context) async {
+  // যদি token null হয়
+  if (token == null || token!.isEmpty) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text("No token found")),
+  );
+  return;
+}
+
+  try {
+    // Logout API call
+    final response = await LogoutApiService.logout(token!);
+
+    // Toast message দেখাবে
+    Fluttertoast.showToast(
+      msg: response,
+      backgroundColor: Colors.black87,
+      textColor: Colors.white,
+      gravity: ToastGravity.BOTTOM,
+    );
+
+    // যদি success থাকে তাহলে login page-এ redirect করবে
+    if (response.toLowerCase().contains("success")) {
+      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+    }
+  } catch (e) {
+    // Error handle
+    Fluttertoast.showToast(
+      msg: "Logout failed: $e",
+      backgroundColor: Colors.redAccent,
+      textColor: Colors.white,
+    );
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +63,6 @@ class Welcome extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 100),
-
-            // Title or Logo
             const Text(
               "Welcome",
               style: TextStyle(
@@ -32,9 +71,7 @@ class Welcome extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-
             const SizedBox(height: 20),
-
             const Text(
               "Glad to see you here!",
               style: TextStyle(
@@ -42,14 +79,9 @@ class Welcome extends StatelessWidget {
                 fontSize: 18,
               ),
             ),
-
             const Spacer(),
-
-            // Button
             GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, '/');
-              },
+              onTap: () => _logout(context),
               child: Container(
                 height: 50,
                 margin: const EdgeInsets.symmetric(horizontal: 50),
@@ -59,7 +91,7 @@ class Welcome extends StatelessWidget {
                 ),
                 child: const Center(
                   child: Text(
-                    "Get Started",
+                    "Log out",
                     style: TextStyle(
                       color: Colors.blueAccent,
                       fontWeight: FontWeight.bold,
@@ -69,7 +101,6 @@ class Welcome extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 60),
           ],
         ),
@@ -77,3 +108,4 @@ class Welcome extends StatelessWidget {
     );
   }
 }
+

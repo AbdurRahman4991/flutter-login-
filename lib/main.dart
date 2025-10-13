@@ -3,6 +3,7 @@ import 'package:my_first_app/Pages/reset_password.dart';
 import 'register.dart';
 import 'forget_password.dart';
 import 'Pages/welcome.dart';
+import '/services/login_api_service.dart'; // Make sure this file has loginUser() function
 
 void main() {
   runApp(MyApp());
@@ -15,18 +16,60 @@ class MyApp extends StatelessWidget {
       title: 'Login Page',
       debugShowCheckedModeBanner: false,
       routes: {
-        '/': (context) => const Home(), // <- Home widget রুট হিসেবে
+        '/': (context) => Home(),
         '/signup': (context) => const Register(),
-        '/forget-password':(context) => const ForgetPassword(),
-        '/reset-password': (context)=>const ResetPassword(),
-        '/welcome':(context)  => const Welcome(),
+        '/forget-password': (context) => const ForgetPassword(),
+        '/reset-password': (context) => const ResetPassword(),
+        //'/welcome': (context) => const Welcome(),
+        // '/welcome': (context) {
+        // final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+        // return Welcome(token: args['token']);
+        //   },
+        '/welcome': (context) {
+    final args = ModalRoute.of(context)!.settings.arguments;
+    final token = (args as Map<String, dynamic>?)?['token'];
+    return Welcome(token: token);
+  },
+
       },
     );
   }
 }
 
-class Home extends StatelessWidget {
-  const Home({super.key});
+class Home extends StatefulWidget {
+  const Home({super.key });
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  // void _showErrorDialog(BuildContext context, String message) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (ctx) => AlertDialog(
+  //       title: const Text("Error"),
+  //       content: Text(message),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.of(ctx).pop(),
+  //           child: const Text("OK"),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +80,9 @@ class Home extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             colors: [
-              Colors.orange[900]!,
-              Colors.orange[800]!,
-              Colors.orange[400]!,
+              Colors.blue[900]!,
+              Colors.blue[800]!,
+              Colors.blue[400]!,
             ],
           ),
         ),
@@ -68,92 +111,117 @@ class Home extends StatelessWidget {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: <Widget>[
-                      const SizedBox(height: 60),
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color.fromRGBO(225, 95, 27, .3),
-                              blurRadius: 20,
-                              offset: Offset(0, 10),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: <Widget>[
+                        const SizedBox(height: 60),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color.fromRGBO(225, 95, 27, .3),
+                                blurRadius: 20,
+                                offset: Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: TextFormField(
+                            controller: emailController,
+                            decoration: const InputDecoration(
+                              hintText: "Email address",
+                              hintStyle: TextStyle(color: Colors.grey),
+                              border: InputBorder.none,
                             ),
-                          ],
-                        ),
-                        child: const TextField(
-                          decoration: InputDecoration(
-                            hintText: "Email address",
-                            hintStyle: TextStyle(color: Colors.grey),
-                            border: InputBorder.none,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Type your emil';
+                              } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                                return 'Pless type your valid email address';
+                              }
+                              return null;
+                            },
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color.fromRGBO(225, 95, 27, .3),
-                              blurRadius: 20,
-                              offset: Offset(0, 10),
+                        const SizedBox(height: 20),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color.fromRGBO(225, 95, 27, .3),
+                                blurRadius: 20,
+                                offset: Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: TextFormField(
+                            controller: passwordController,
+                            obscureText: true,
+                            decoration: const InputDecoration(
+                              hintText: "Password",
+                              hintStyle: TextStyle(color: Colors.grey),
+                              border: InputBorder.none,
                             ),
-                          ],
-                        ),
-                        child: const TextField(
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            hintText: "Password",
-                            hintStyle: TextStyle(color: Colors.grey),
-                            border: InputBorder.none,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Type your password';
+                              } else if (value.length < 8) {
+                                return 'Minimum password 8 characters';
+                              }
+                              return null;
+                            },
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: GestureDetector(
-                          onTap:(){
-                            Navigator.pushNamed(context, '/forget-password');
-                          },
-                          child: Text(
-                            "Forget Password",
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                         
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.pushNamed(context, '/signup');
-                          },
-                          child: Text(
-                            "Signup",
-                            style: TextStyle(color: Colors.grey),
+                        const SizedBox(height: 20),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(context, '/forget-password');
+                            },
+                            child: const Text(
+                              "Forget Password",
+                              style: TextStyle(color: Colors.grey),
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 40),
+                        const SizedBox(height: 20),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(context, '/signup');
+                            },
+                            child: const Text(
+                              "Signup",
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 40),
                         Container(
                           height: 50,
                           margin: const EdgeInsets.symmetric(horizontal: 50),
                           decoration: BoxDecoration(
-                            color: Colors.orange[900],
+                            color: Colors.blue[900],
                             borderRadius: BorderRadius.circular(50),
                           ),
                           child: Center(
                             child: GestureDetector(
                               onTap: () {
-                                Navigator.pushNamed(context, '/welcome');
+                                if (_formKey.currentState!.validate()) {
+                                  final email = emailController.text.trim();
+                                  final password = passwordController.text.trim();
+                                  loginUser(context, email, password);
+                                } else {
+                                 // _showErrorDialog(context, "Please fix the errors in the form.");
+                                }
                               },
                               child: const Text(
                                 "Login",
@@ -165,8 +233,8 @@ class Home extends StatelessWidget {
                             ),
                           ),
                         ),
-
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
