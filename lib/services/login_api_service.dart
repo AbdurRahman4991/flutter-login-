@@ -47,7 +47,7 @@ void _showErrorDialog(BuildContext context, String message) {
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text("Error"),
+      title: const Text(""),
       content: Text(message),
       actions: [
         TextButton(

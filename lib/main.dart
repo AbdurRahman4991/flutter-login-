@@ -10,31 +10,73 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Login Page',
       debugShowCheckedModeBanner: false,
-      routes: {
-        '/': (context) => Home(),
-        '/signup': (context) => const Register(),
-        '/forget-password': (context) => const ForgetPassword(),
-        '/reset-password': (context) => const ResetPassword(),
-        //'/welcome': (context) => const Welcome(),
-        // '/welcome': (context) {
-        // final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-        // return Welcome(token: args['token']);
-        //   },
-        '/welcome': (context) {
-    final args = ModalRoute.of(context)!.settings.arguments;
-    final token = (args as Map<String, dynamic>?)?['token'];
-    return Welcome(token: token);
-  },
+      onGenerateRoute: (settings) {
+        final uri = Uri.parse(settings.name ?? '/');
 
+        if (uri.pathSegments.isEmpty) {
+          return MaterialPageRoute(builder: (_) => const Home());
+        }
+
+        if (uri.pathSegments[0] == 'reset-password' && uri.pathSegments.length == 3) {
+          final token = uri.pathSegments[1];
+          final email = uri.pathSegments[2];
+          return MaterialPageRoute(
+            builder: (_) => ResetPassword(token: token, email: Uri.decodeComponent(email)),
+          );
+        }
+
+        switch (uri.path) {
+          case '/signup':
+            return MaterialPageRoute(builder: (_) => const Register());
+          case '/forget-password':
+            return MaterialPageRoute(builder: (_) => const ForgetPassword());
+          case '/welcome':
+            final args = settings.arguments as Map<String, dynamic>?;
+            final token = args?['token'];
+            return MaterialPageRoute(builder: (_) =>  Welcome( token: token));
+          case '/':
+          default:
+            return MaterialPageRoute(builder: (_) => const Home());
+        }
       },
     );
   }
 }
+
+
+// class MyApp extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'Login Page',
+//       debugShowCheckedModeBanner: false,
+//       routes: {
+//         '/': (context) => Home(),
+//         '/signup': (context) => const Register(),
+//         '/forget-password': (context) => const ForgetPassword(),
+//         '/reset-password': (context) => const ResetPassword(),
+//         //'/welcome': (context) => const Welcome(),
+//         // '/welcome': (context) {
+//         // final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+//         // return Welcome(token: args['token']);
+//         //   },
+//         '/welcome': (context) {
+//     final args = ModalRoute.of(context)!.settings.arguments;
+//     final token = (args as Map<String, dynamic>?)?['token'];
+//     return Welcome(token: token);
+//   },
+
+//       },
+//     );
+//   }
+// }
 
 class Home extends StatefulWidget {
   const Home({super.key });
