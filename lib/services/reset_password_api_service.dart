@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ResetPasswordService {
-  static const String baseUrl = 'http://192.168.20.203:4000/api';
+  static const String baseUrl = 'http://192.168.0.104:400/api';
 
   static Future<String> resetPassword({
     required String email,
@@ -10,7 +10,7 @@ class ResetPasswordService {
     required String password,
     required String confirmPassword,
   }) async {
-    final url = Uri.parse('$baseUrl/reset-password');
+    final url = Uri.parse('$baseUrl/password-reset');
 
     final response = await http.post(
       url,

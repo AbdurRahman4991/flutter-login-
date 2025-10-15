@@ -20,7 +20,7 @@ class _RegisterState extends State<Register> {
 
   Future<void> handleRegister() async {
     if (!_formKey.currentState!.validate()) {
-      return; // validation fail করলে আর কিছু করবে না
+      return;
     }
 
     setState(() => isLoading = true);
@@ -39,7 +39,6 @@ class _RegisterState extends State<Register> {
     );
 
     if (message == "User registered successfully") {
-      // ✅ সফল হলে ইনপুট ফিল্ড clear
       nameController.clear();
       emailController.clear();
       passwordController.clear();
@@ -51,6 +50,8 @@ class _RegisterState extends State<Register> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // ✅ নিচের লাইনটা দিলে keyboard উঠলে overflow হবে না
+      resizeToAvoidBottomInset: true,
       body: Container(
         width: double.infinity,
         decoration: BoxDecoration(
@@ -63,122 +64,125 @@ class _RegisterState extends State<Register> {
             ],
           ),
         ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              const SizedBox(height: 60),
-              const Padding(
-                padding: EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text("Register", style: TextStyle(color: Colors.white, fontSize: 40)),
-                    Text("Welcome", style: TextStyle(color: Colors.white, fontSize: 18)),
-                  ],
-                ),
-              ),
-              Container(
-                height: MediaQuery.of(context).size.height * 0.75,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(60),
-                    topRight: Radius.circular(60),
+        // ✅ এখানে SafeArea + SingleChildScrollView ব্যবহার করো
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const SizedBox(height: 40),
+                const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text("Register", style: TextStyle(color: Colors.white, fontSize: 40)),
+                      Text("Welcome", style: TextStyle(color: Colors.white, fontSize: 18)),
+                    ],
                   ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: <Widget>[
-                        const SizedBox(height: 40),
+                Container(
+                  // ❌ fixed height বাদ দাও (এইটায়ই overflow হচ্ছিল)
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(60),
+                      topRight: Radius.circular(60),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: <Widget>[
+                          const SizedBox(height: 40),
 
-                        _buildInputField(
-                          "Name",
-                          controller: nameController,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) return "Name is required";
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 20),
+                          _buildInputField(
+                            "Name",
+                            controller: nameController,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) return "Name is required";
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
 
-                        _buildInputField(
-                          "Email",
-                          controller: emailController,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) return "Email is required";
-                            if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) return "Enter a valid email";
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 20),
+                          _buildInputField(
+                            "Email",
+                            controller: emailController,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) return "Email is required";
+                              if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) return "Enter a valid email";
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
 
-                        _buildInputField(
-                          "Password",
-                          controller: passwordController,
-                          isPassword: true,
-                          validator: (value) {
-                            if (value == null || value.length < 6) return "Minimum 8 characters required";
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 20),
+                          _buildInputField(
+                            "Password",
+                            controller: passwordController,
+                            isPassword: true,
+                            validator: (value) {
+                              if (value == null || value.length < 8) return "Minimum 8 characters required";
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
 
-                        _buildInputField(
-                          "Confirm password",
-                          controller: confirmController,
-                          isPassword: true,
-                          validator: (value) {
-                            if (value != passwordController.text) return "Passwords do not match";
-                            return null;
-                          },
-                        ),
+                          _buildInputField(
+                            "Confirm password",
+                            controller: confirmController,
+                            isPassword: true,
+                            validator: (value) {
+                              if (value != passwordController.text) return "Passwords do not match";
+                              return null;
+                            },
+                          ),
 
-                        const SizedBox(height: 40),
+                          const SizedBox(height: 40),
 
-                        GestureDetector(
-                          onTap: isLoading ? null : handleRegister,
-                          child: Container(
-                            height: 50,
-                            margin: const EdgeInsets.symmetric(horizontal: 50),
-                            decoration: BoxDecoration(
-                              color: Colors.blue[900],
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                            child: Center(
-                              child: isLoading
-                                  ? const CircularProgressIndicator(color: Colors.white)
-                                  : const Text(
-                                      "Register",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
+                          GestureDetector(
+                            onTap: isLoading ? null : handleRegister,
+                            child: Container(
+                              height: 50,
+                              margin: const EdgeInsets.symmetric(horizontal: 50),
+                              decoration: BoxDecoration(
+                                color: Colors.blue[900],
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              child: Center(
+                                child: isLoading
+                                    ? const CircularProgressIndicator(color: Colors.white)
+                                    : const Text(
+                                        "Register",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
+                              ),
                             ),
                           ),
-                        ),
 
-                        const SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                          child: Text(
-                            "Already have an account? Login",
-                            style: TextStyle(color: Colors.grey[600]),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text(
+                              "Already have an account? Login",
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

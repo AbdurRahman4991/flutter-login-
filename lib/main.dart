@@ -1,36 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:my_first_app/Pages/reset_password.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+
+import 'Pages/reset_password.dart';
 import 'register.dart';
 import 'forget_password.dart';
 import 'Pages/welcome.dart';
-import '/services/login_api_service.dart'; // Make sure this file has loginUser() function
 
 void main() {
-  runApp(MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  setUrlStrategy(const HashUrlStrategy());
+
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Login Page',
       debugShowCheckedModeBanner: false,
-      routes: {
-        '/': (context) => Home(),
-        '/signup': (context) => const Register(),
-        '/forget-password': (context) => const ForgetPassword(),
-        '/reset-password': (context) => const ResetPassword(),
-        //'/welcome': (context) => const Welcome(),
-        // '/welcome': (context) {
-        // final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-        // return Welcome(token: args['token']);
-        //   },
-        '/welcome': (context) {
-    final args = ModalRoute.of(context)!.settings.arguments;
-    final token = (args as Map<String, dynamic>?)?['token'];
-    return Welcome(token: token);
-  },
+      onGenerateRoute: (settings) {
+        final uri = Uri.parse(settings.name ?? '/');
 
+        if (uri.pathSegments.isEmpty) {
+          return MaterialPageRoute(builder: (_) => const Home());
+        }
+
+        if (uri.pathSegments[0] == 'reset-password' && uri.pathSegments.length == 3) {
+          final token = uri.pathSegments[1];
+          final email = uri.pathSegments[2];
+          return MaterialPageRoute(
+            builder: (_) => ResetPassword(token: token, email: Uri.decodeComponent(email)),
+          );
+        }
+
+        switch (uri.path) {
+          case '/signup':
+            return MaterialPageRoute(builder: (_) => const Register());
+          case '/forget-password':
+            return MaterialPageRoute(builder: (_) => const ForgetPassword());
+          case '/':
+          default:
+            return MaterialPageRoute(builder: (_) => const Home());
+        }
       },
     );
   }
@@ -55,21 +69,26 @@ class _HomeState extends State<Home> {
     super.dispose();
   }
 
-  // void _showErrorDialog(BuildContext context, String message) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (ctx) => AlertDialog(
-  //       title: const Text("Error"),
-  //       content: Text(message),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.of(ctx).pop(),
-  //           child: const Text("OK"),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+  // এখানে loginUser মেথডটি ডিফাইন করুন
+  void loginUser(BuildContext context, String email, String password) async {
+    // TODO: এখানে আপনার API কল করবেন
+    // নিচে কেবল একটা সিম্পল মক লগিক দেয়া হলো:
+
+    if (email == "test@example.com" && password == "12345678") {
+      // লগইন সফল
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login successful!')),
+      );
+
+      // ওয়েলকাম পেজে নিয়ে যাওয়া
+      Navigator.pushReplacementNamed(context, '/welcome');
+    } else {
+      // লগইন ব্যর্থ
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid email or password')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -138,9 +157,9 @@ class _HomeState extends State<Home> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Type your emil';
+                                return 'Type your email';
                               } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                                return 'Pless type your valid email address';
+                                return 'Please type a valid email address';
                               }
                               return null;
                             },
@@ -219,8 +238,6 @@ class _HomeState extends State<Home> {
                                   final email = emailController.text.trim();
                                   final password = passwordController.text.trim();
                                   loginUser(context, email, password);
-                                } else {
-                                 // _showErrorDialog(context, "Please fix the errors in the form.");
                                 }
                               },
                               child: const Text(

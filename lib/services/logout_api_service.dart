@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class LogoutApiService {
-  static const String baseUrl = "http://192.168.20.203:4000/api";
+  static const String baseUrl = "http://192.168.0.104:400/api";
 
   static Future<String> logout(String token) async {
     try {
