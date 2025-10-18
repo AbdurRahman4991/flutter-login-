@@ -3,6 +3,7 @@ import 'package:my_first_app/Pages/reset_password.dart';
 import 'register.dart';
 import 'forget_password.dart';
 import 'Pages/welcome.dart';
+import 'Pages/Verify_otp.dart';
 import '/services/login_api_service.dart'; // Make sure this file has loginUser() function
 
 void main() {
@@ -37,6 +38,10 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(builder: (_) => const Register());
           case '/forget-password':
             return MaterialPageRoute(builder: (_) => const ForgetPassword());
+
+          case '/verify-otp':
+            return MaterialPageRoute(builder: (_) => const VerifyOtp());
+
           case '/welcome':
             final args = settings.arguments as Map<String, dynamic>?;
             final token = args?['token'];
