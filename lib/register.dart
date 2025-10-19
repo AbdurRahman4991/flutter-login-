@@ -18,35 +18,99 @@ class _RegisterState extends State<Register> {
 
   bool isLoading = false;
 
+  // Future<void> handleRegister() async {
+  //   if (!_formKey.currentState!.validate()) {
+  //     return; // validation fail করলে আর কিছু করবে না
+  //   }
+
+  //   setState(() => isLoading = true);
+
+  //   final message = await ApiService.registerUser(
+  //     nameController.text.trim(),
+  //     emailController.text.trim(),
+  //     passwordController.text.trim(),
+  //     confirmController.text.trim(),
+  //   );
+
+  //   setState(() => isLoading = false);
+
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(content: Text(message ?? "Unknown error")),
+  //   );
+
+  //   // if (message == "User registered successfully") {
+  //   //   // ✅ সফল হলে ইনপুট ফিল্ড clear
+  //   //   nameController.clear();
+  //   //   emailController.clear();
+  //   //   passwordController.clear();
+  //   //   confirmController.clear();
+  //   //   _formKey.currentState?.reset();
+  //   //   Navigator.pushNamed(context, '/verify-otp');
+  //   // }
+  //   if (message == "User registered successfully") {
+  //     // ✅ ইনপুট clear
+  //     nameController.clear();
+  //     emailController.clear();
+  //     passwordController.clear();
+  //     confirmController.clear();
+  //     _formKey.currentState?.reset();
+
+  //     // ✅ OTP পেজে যান
+  //     Navigator.pushNamed(
+  //       context,
+  //       '/verify-otp',
+  //       arguments: {'email': emailController.text.trim()},
+  //     );
+
+  //     // ✅ তারপর snackbar দেখান (অপশনাল)
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("Registration successful")),
+  //     );
+  //   }
+
   Future<void> handleRegister() async {
-    if (!_formKey.currentState!.validate()) {
-      return; // validation fail করলে আর কিছু করবে না
-    }
-
-    setState(() => isLoading = true);
-
-    final message = await ApiService.registerUser(
-      nameController.text.trim(),
-      emailController.text.trim(),
-      passwordController.text.trim(),
-      confirmController.text.trim(),
-    );
-
-    setState(() => isLoading = false);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message ?? "Unknown error")),
-    );
-
-    if (message == "User registered successfully") {
-      // ✅ সফল হলে ইনপুট ফিল্ড clear
-      nameController.clear();
-      emailController.clear();
-      passwordController.clear();
-      confirmController.clear();
-      _formKey.currentState?.reset();
-    }
+  if (!_formKey.currentState!.validate()) {
+    return;
   }
+
+  setState(() => isLoading = true);
+
+  final message = await ApiService.registerUser(
+    nameController.text.trim(),
+    emailController.text.trim(),
+    passwordController.text.trim(),
+    confirmController.text.trim(),
+  );
+  print("🚀 Registration response: $message");
+  setState(() => isLoading = false);
+
+  // দেখানো বার্তা
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(message ?? "Unknown error")),
+  );
+
+  if ((message ?? '').toLowerCase().contains("registration successful")) {
+  final userEmail = emailController.text.trim();
+
+  nameController.clear();
+  emailController.clear();
+  passwordController.clear();
+  confirmController.clear();
+  _formKey.currentState?.reset();
+
+  Navigator.pushNamed(
+    context,
+    '/verify-otp',
+    arguments: {'email': userEmail},
+  );
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text("Registration successful")),
+  );
+}
+
+}
+
 
   @override
   Widget build(BuildContext context) {

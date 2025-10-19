@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '/services/forget_password_api_service.dart'; // ✅ নতুন সার্ভিস ইম্পোর্ট
 
+
 class ForgetPassword extends StatefulWidget {
   const ForgetPassword({super.key});
 
@@ -15,30 +16,57 @@ class _ForgetPasswordState extends State<ForgetPassword> {
   bool isLoading = false;
 
   Future<void> sendResetEmail() async {
-    if (!_formKey.currentState!.validate()) return;
+  if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      isLoading = true;
-    });
+  setState(() {
+    isLoading = true;
+  });
 
-    final email = emailController.text.trim();
+  final email = emailController.text.trim();
 
+  try {
     // 🔹 সার্ভিস কল
-    final responseMessage = await ForgetPasswordApiService.sendResetLink(email);
+    final response = await ForgetPasswordApiService.sendResetLink(email);
+
+    final status = response['status'];
+    final message = response['message'];
+
+    print('Status: $status');
+    print('Message: $message');
 
     // 🔹 Toast দেখাও
     Fluttertoast.showToast(
-      msg: responseMessage,
-      backgroundColor: responseMessage.toLowerCase().contains('success')
-          ? Colors.green
-          : Colors.red,
+      msg: message,
+      backgroundColor: status == 200 ? Colors.green : Colors.red,
       textColor: Colors.white,
     );
 
-    setState(() {
-      isLoading = false;
-    });
+    // 🔹 success হলে নেভিগেট করো
+    if (status == 200 && context.mounted) {
+      Navigator.pushNamed(
+        context,
+        '/reset-password',
+        arguments: {
+          'email': email,
+        },
+      );
+    }
+  } catch (e) {
+    Fluttertoast.showToast(
+      msg: "Something went wrong. Please try again.",
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+    );
+  } finally {
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
+}
+
+
 
   @override
   Widget build(BuildContext context) {

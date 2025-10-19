@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '/services/register_email_veryfy_otp.dart';
 
-class VerifyOtp extends StatefulWidget {
+class veryfiOtpForgetPassword extends StatefulWidget {
  final Map<String, dynamic>? arguments;
 
-  const VerifyOtp({super.key, this.arguments});
+  const veryfiOtpForgetPassword({super.key, this.arguments});
 
   @override
-  State<VerifyOtp> createState() => _VerifyOtpState();
+  State<veryfiOtpForgetPassword> createState() => _VerifyOtpState();
 }
 
-class _VerifyOtpState extends State<VerifyOtp> {
+class _VerifyOtpState extends State<veryfiOtpForgetPassword> {
   List<TextEditingController> _otpControllers =
       List.generate(6, (index) => TextEditingController());
   bool _isLoading = false;
@@ -50,7 +50,7 @@ class _VerifyOtpState extends State<VerifyOtp> {
     if (message == "Email verified successfully") {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(message!)));
-      Navigator.pushReplacementNamed(context, '/');
+      Navigator.pushReplacementNamed(context, '/welcome');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(message ?? "Verification failed")));
@@ -83,7 +83,7 @@ class _VerifyOtpState extends State<VerifyOtp> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text("Verify OTP",
+                    Text("Verify forget password OTP",
                         style: TextStyle(color: Colors.white, fontSize: 40)),
                     Text("Welcome",
                         style: TextStyle(color: Colors.white, fontSize: 18)),

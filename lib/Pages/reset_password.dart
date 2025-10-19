@@ -162,21 +162,23 @@ import 'package:flutter/material.dart';
 import '/services/reset_password_api_service.dart';
 
 class ResetPassword extends StatefulWidget {
-  final String token;
-  final String email;
-
-  const ResetPassword({super.key, required this.token, required this.email});
+   final Map<String, dynamic>? arguments;
+  const ResetPassword({super.key, this.arguments});
 
   @override
   State<ResetPassword> createState() => _ResetPasswordState();
 }
 
 class _ResetPasswordState extends State<ResetPassword> {
+  final emailController = TextEditingController();
+  final otpController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmController = TextEditingController();
 
   @override
   void dispose() {
+    emailController.dispose();
+    otpController.dispose();
     passwordController.dispose();
     confirmController.dispose();
     super.dispose();
@@ -194,92 +196,66 @@ class _ResetPasswordState extends State<ResetPassword> {
           ),
         ),
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              const SizedBox(height: 60),
-              const Padding(
-                padding: EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text("Reset Password",
-                        style: TextStyle(color: Colors.white, fontSize: 40)),
-                    Text("Welcome",
-                        style: TextStyle(color: Colors.white, fontSize: 18)),
-                  ],
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                const SizedBox(height: 60),
+                const Text(
+                  "Reset Password",
+                  style: TextStyle(color: Colors.white, fontSize: 40),
                 ),
-              ),
-              Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(60),
-                    topRight: Radius.circular(60),
+                const SizedBox(height: 10),
+                _buildInputField("Email address", controller: emailController),
+                const SizedBox(height: 20),
+                _buildInputField("OTP", controller: otpController),
+                const SizedBox(height: 20),
+                _buildInputField("New Password", isPassword: true, controller: passwordController),
+                const SizedBox(height: 20),
+                _buildInputField("Confirm Password", isPassword: true, controller: confirmController),
+                const SizedBox(height: 40),
+                GestureDetector(
+                  onTap: () async {
+                    if (passwordController.text != confirmController.text) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Passwords do not match")),
+                      );
+                      return;
+                    }
+
+                    final result = await ResetPasswordService.resetPassword(
+                      email: emailController.text.trim(),
+                      otp: otpController.text.trim(),
+                      password: passwordController.text,
+                      confirmPassword: confirmController.text,
+                    );
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(result)),
+                    );
+                  },
+                  child: Container(
+                    height: 50,
+                    margin: const EdgeInsets.symmetric(horizontal: 50),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[900],
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: const Center(
+                      child: Text("Reset Password",
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ),
                   ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: <Widget>[
-                      const SizedBox(height: 40),
-                      _buildInputField("Email address",
-                          controller: TextEditingController(text: widget.email), enabled: false),
-                      const SizedBox(height: 20),
-                      _buildInputField("Password",
-                          isPassword: true, controller: passwordController),
-                      const SizedBox(height: 20),
-                      _buildInputField("Confirm password",
-                          isPassword: true, controller: confirmController),
-                      const SizedBox(height: 40),
-                      GestureDetector(
-                        onTap: () async {
-                          if (passwordController.text != confirmController.text) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Passwords do not match")),
-                            );
-                            return;
-                          }
-
-                          final result = await ResetPasswordService.resetPassword(
-                            email: widget.email,
-                            token: widget.token,
-                            password: passwordController.text,
-                            confirmPassword: confirmController.text,
-                          );
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(result)),
-                          );
-                        },
-                        child: Container(
-                          height: 50,
-                          margin: const EdgeInsets.symmetric(horizontal: 50),
-                          decoration: BoxDecoration(
-                            color: Colors.blue[900],
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          child: const Center(
-                            child: Text("Reset Password",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                        child: Text("Back to Login",
-                            style: TextStyle(color: Colors.grey[600])),
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: 20),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("Back to Login", style: TextStyle(color: Colors.grey[600])),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -287,9 +263,7 @@ class _ResetPasswordState extends State<ResetPassword> {
   }
 
   Widget _buildInputField(String hint,
-      {bool isPassword = false,
-      required TextEditingController controller,
-      bool enabled = true}) {
+      {bool isPassword = false, required TextEditingController controller}) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -297,14 +271,14 @@ class _ResetPasswordState extends State<ResetPassword> {
         borderRadius: BorderRadius.circular(10),
         boxShadow: const [
           BoxShadow(
-              color: Color.fromRGBO(225, 95, 27, .3),
-              blurRadius: 20,
-              offset: Offset(0, 10)),
+            color: Color.fromRGBO(225, 95, 27, .3),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
         ],
       ),
       child: TextField(
         controller: controller,
-        enabled: enabled,
         obscureText: isPassword,
         decoration: InputDecoration(
           hintText: hint,

@@ -6,7 +6,7 @@ class ResetPasswordService {
 
   static Future<String> resetPassword({
     required String email,
-    required String token,
+    required String otp,
     required String password,
     required String confirmPassword,
   }) async {
@@ -17,7 +17,7 @@ class ResetPasswordService {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'email': email,
-        'token': token,
+        'otp': otp,
         'password': password,
         'password_confirmation': confirmPassword,
       }),

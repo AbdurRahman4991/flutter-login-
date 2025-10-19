@@ -3,6 +3,7 @@ import 'package:my_first_app/Pages/reset_password.dart';
 import 'register.dart';
 import 'forget_password.dart';
 import 'Pages/welcome.dart';
+import 'Pages/veryfi_otp_forget_password.dart';
 import 'Pages/Verify_otp.dart';
 import '/services/login_api_service.dart'; // Make sure this file has loginUser() function
 
@@ -25,22 +26,28 @@ class MyApp extends StatelessWidget {
           return MaterialPageRoute(builder: (_) => const Home());
         }
 
-        if (uri.pathSegments[0] == 'reset-password' && uri.pathSegments.length == 3) {
-          final token = uri.pathSegments[1];
-          final email = uri.pathSegments[2];
-          return MaterialPageRoute(
-            builder: (_) => ResetPassword(token: token, email: Uri.decodeComponent(email)),
-          );
-        }
+        // if (uri.pathSegments[0] == 'reset-password' && uri.pathSegments.length == 3) {
+        //   final token = uri.pathSegments[1];
+        //   final email = uri.pathSegments[2];
+          
+        // }
 
         switch (uri.path) {
           case '/signup':
             return MaterialPageRoute(builder: (_) => const Register());
           case '/forget-password':
-            return MaterialPageRoute(builder: (_) => const ForgetPassword());
-
+            return MaterialPageRoute(builder: (_) => const ForgetPassword());         
           case '/verify-otp':
-            return MaterialPageRoute(builder: (_) => const VerifyOtp());
+            final args = settings.arguments as Map<String, dynamic>?;
+            return MaterialPageRoute(
+              builder: (_) => VerifyOtp(arguments: args),
+            );
+          
+          case '/reset-password':
+             final args = settings.arguments as Map<String, dynamic>?;
+            return MaterialPageRoute(
+              builder: (_) => ResetPassword(arguments: args),
+            );
 
           case '/welcome':
             final args = settings.arguments as Map<String, dynamic>?;
@@ -247,6 +254,19 @@ class _HomeState extends State<Home> {
                             },
                             child: const Text(
                               "Signup",
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                         const SizedBox(height: 20),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(context, '/verify-otp-forget-password');
+                            },
+                            child: const Text(
+                              "Veryfy otp",
                               style: TextStyle(color: Colors.grey),
                             ),
                           ),
