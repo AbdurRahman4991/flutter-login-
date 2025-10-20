@@ -3,6 +3,8 @@ import 'package:my_first_app/Pages/reset_password.dart';
 import 'register.dart';
 import 'forget_password.dart';
 import 'Pages/welcome.dart';
+import 'Pages/resend_otp.dart';
+import 'Pages/login_otp.dart';
 import 'Pages/veryfi_otp_forget_password.dart';
 import 'Pages/Verify_otp.dart';
 import '/services/login_api_service.dart'; // Make sure this file has loginUser() function
@@ -26,12 +28,6 @@ class MyApp extends StatelessWidget {
           return MaterialPageRoute(builder: (_) => const Home());
         }
 
-        // if (uri.pathSegments[0] == 'reset-password' && uri.pathSegments.length == 3) {
-        //   final token = uri.pathSegments[1];
-        //   final email = uri.pathSegments[2];
-          
-        // }
-
         switch (uri.path) {
           case '/signup':
             return MaterialPageRoute(builder: (_) => const Register());
@@ -42,6 +38,14 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (_) => VerifyOtp(arguments: args),
             );
+          case '/resend-otp':
+            return MaterialPageRoute(builder: (_) => const ResendOtp()); 
+          case '/login-otp':
+            final args = settings.arguments as Map<String, dynamic>?;
+            return MaterialPageRoute(
+              builder: (_) => LoginOtp(arguments: args),
+            );
+ 
           
           case '/reset-password':
              final args = settings.arguments as Map<String, dynamic>?;
@@ -62,34 +66,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
-// class MyApp extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Login Page',
-//       debugShowCheckedModeBanner: false,
-//       routes: {
-//         '/': (context) => Home(),
-//         '/signup': (context) => const Register(),
-//         '/forget-password': (context) => const ForgetPassword(),
-//         '/reset-password': (context) => const ResetPassword(),
-//         //'/welcome': (context) => const Welcome(),
-//         // '/welcome': (context) {
-//         // final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-//         // return Welcome(token: args['token']);
-//         //   },
-//         '/welcome': (context) {
-//     final args = ModalRoute.of(context)!.settings.arguments;
-//     final token = (args as Map<String, dynamic>?)?['token'];
-//     return Welcome(token: token);
-//   },
-
-//       },
-//     );
-//   }
-// }
-
 class Home extends StatefulWidget {
   const Home({super.key });
 
@@ -98,6 +74,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  bool _isLoading = false; 
   final _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -108,22 +85,6 @@ class _HomeState extends State<Home> {
     passwordController.dispose();
     super.dispose();
   }
-
-  // void _showErrorDialog(BuildContext context, String message) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (ctx) => AlertDialog(
-  //       title: const Text("Error"),
-  //       content: Text(message),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.of(ctx).pop(),
-  //           child: const Text("OK"),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -258,15 +219,29 @@ class _HomeState extends State<Home> {
                             ),
                           ),
                         ),
-                         const SizedBox(height: 20),
+                        //  const SizedBox(height: 20),
+                        // Align(
+                        //   alignment: Alignment.centerRight,
+                        //   child: GestureDetector(
+                        //     onTap: () {
+                        //       Navigator.pushNamed(context, '/reset-password');
+                        //     },
+                        //     child: const Text(
+                        //       "Veryfy otp",
+                        //       style: TextStyle(color: Colors.grey),
+                        //     ),
+                        //   ),
+                        // ),
+                        
+                        const SizedBox(height: 20),
                         Align(
                           alignment: Alignment.centerRight,
                           child: GestureDetector(
                             onTap: () {
-                              Navigator.pushNamed(context, '/verify-otp-forget-password');
+                              Navigator.pushNamed(context, '/resend-otp');
                             },
                             child: const Text(
-                              "Veryfy otp",
+                              "Resend otp",
                               style: TextStyle(color: Colors.grey),
                             ),
                           ),
@@ -281,25 +256,29 @@ class _HomeState extends State<Home> {
                           ),
                           child: Center(
                             child: GestureDetector(
-                              onTap: () {
+                              onTap: () async {
                                 if (_formKey.currentState!.validate()) {
                                   final email = emailController.text.trim();
                                   final password = passwordController.text.trim();
-                                  loginUser(context, email, password);
-                                } else {
-                                 // _showErrorDialog(context, "Please fix the errors in the form.");
+
+                                  setState(() => _isLoading = true);
+                                  await loginUser(context, email, password);
+                                  setState(() => _isLoading = false);
                                 }
                               },
-                              child: const Text(
-                                "Login",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              child: _isLoading
+                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  : const Text(
+                                      "Login",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                             ),
                           ),
                         ),
+
                       ],
                     ),
                   ),

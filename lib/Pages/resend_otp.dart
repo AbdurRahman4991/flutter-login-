@@ -3,14 +3,14 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '/services/forget_password_api_service.dart'; // ✅ নতুন সার্ভিস ইম্পোর্ট
 
 
-class ForgetPassword extends StatefulWidget {
-  const ForgetPassword({super.key});
+class ResendOtp extends StatefulWidget {
+  const ResendOtp({super.key});
 
   @override
-  State<ForgetPassword> createState() => _ForgetPasswordState();
+  State<ResendOtp> createState() => _ResendOtpState();
 }
 
-class _ForgetPasswordState extends State<ForgetPassword> {
+class _ResendOtpState extends State<ResendOtp> {
   final TextEditingController emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool isLoading = false;
@@ -45,9 +45,9 @@ class _ForgetPasswordState extends State<ForgetPassword> {
     if (status == 200 && context.mounted) {
       Navigator.pushNamed(
         context,
-        '/reset-password',
+        '/verify-otp',
         arguments: {
-          'email': emailController.text.trim(),
+          'email': email,
         },
       );
     }
@@ -92,7 +92,7 @@ class _ForgetPasswordState extends State<ForgetPassword> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Forget Password",
+                  Text("Resend otp",
                       style: TextStyle(color: Colors.white, fontSize: 40)),
                   Text("Welcome",
                       style: TextStyle(color: Colors.white, fontSize: 18)),
@@ -165,7 +165,7 @@ class _ForgetPasswordState extends State<ForgetPassword> {
                                       color: Colors.white,
                                     )
                                   : const Text(
-                                      "Send mail",
+                                      "Resend otp",
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
